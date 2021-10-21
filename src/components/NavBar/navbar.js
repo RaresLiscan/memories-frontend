@@ -5,6 +5,7 @@ import useStyles from './styles';
 import memories from '../../images/memories.png';
 import { useDispatch } from "react-redux";
 import { LOGOUT } from "../../constants/actionTypes";
+import decode from 'jwt-decode';
 
 const NavBar = () => {
 
@@ -14,15 +15,19 @@ const NavBar = () => {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem("profile"))); 
     const location = useLocation();
 
-    console.log(user);
-
     useEffect(() => {
         const token = user?.token;
 
-        //JWT...
+        if (token) {
+            const decodedToken = decode(token);
+
+            if (decodedToken.exp * 1000 < new Date().getTime()) {
+                logout();
+            }
+        }
 
         setUser(JSON.parse(localStorage.getItem("profile")));
-    }, [localStorage.getItem("profile")]);
+    }, [localStorage.getItem("profile"), location]);
 
     const logout = () => {
         dispatch({ type: LOGOUT });

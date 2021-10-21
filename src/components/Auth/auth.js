@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Avatar, Button, Grid, Paper, Typography, Container, TextField } from '@material-ui/core';
+import { Avatar, Button, Grid, Paper, Typography, Container, TextField, makeStyles } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { GoogleLogin } from 'react-google-login';
 import { useDispatch } from 'react-redux';
@@ -8,21 +8,39 @@ import { useHistory } from 'react-router-dom';
 import useStyles from './styles';
 import Input from './input';
 import Icon from './icon';
+import {signin, signup} from '../../actions/auth';
+import { AUTH } from '../../constants/actionTypes';
+
+const initialState = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+};
 
 const Auth = () => {
     const classes = useStyles();
     const history = useHistory();
     const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState(initialState);
 
     const dispatch = useDispatch();
 
     const [isSignUp, setIsSignUp] = useState(false);
     const handleSubmit = (e) => {
-
+        e.preventDefault();
+        
+        if (isSignUp) {
+            dispatch(signup(formData, history));
+        }
+        else {
+            dispatch(signin(formData, history));
+        }
     }
 
-    const handleChange = () => {
-
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value});
     }
 
     const handleShowPassword = () => {
@@ -31,7 +49,6 @@ const Auth = () => {
 
     const switchMode = () => {
         setIsSignUp((prevValue) => !prevValue);
-        handleShowPassword(false);
     }
 
     const googleSuccess = async (res) => {
@@ -39,7 +56,7 @@ const Auth = () => {
         const token = res?.tokenId;
 
         try {
-            dispatch({ type: "AUTH", data: { response, token }});
+            dispatch({ type: AUTH, data: { response, token }});
 
             history.push('/');
         } catch (error) {
